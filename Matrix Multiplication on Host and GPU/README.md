@@ -24,7 +24,7 @@ The aim of this project is to demonstrate how to perform matrix multiplication u
 
 
 ## Output:
-![image](https://user-images.githubusercontent.com/65499285/235490326-47369ab1-8f07-4ac0-8e66-a39488112caa.png)
+![image](https://user-images.githubusercontent.com/65499285/235492282-632e4a61-1194-48f7-9b0a-86d7d28c4904.png)
 
 ## Result
 
