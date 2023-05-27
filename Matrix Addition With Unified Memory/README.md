@@ -23,5 +23,5 @@ The aim of this experiment is to demonstrate matrix addition using CUDA programm
 ## Result
 The `memset` function calls are not necessary in this program. They were originally used to set the memory blocks for matrices A, B, and C to zero. However, the subsequent initialization loops already assign specific values to each element of the matrices, overwriting the previous values set by `memset`. Removing the `memset` calls does not affect the correctness of the program and has no significant impact on its performance. It is good practice to remove unnecessary code to improve code readability and maintainability.
 <br>
-The result matrix C will be printed to the console, showing the element-wise addition of matrices A and B.
+The result printed to the console, showing the elasped time in the Host and the GPU to compare their performance.
 
