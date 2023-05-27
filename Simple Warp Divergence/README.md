@@ -15,9 +15,9 @@ The program outputs the results of the reduction performed by each kernel. Speci
 
 ![image](https://github.com/Marinto-Richee/Parallel-Computing-Architecture/assets/65499285/597ff299-dae1-45b7-8e8c-561cfe9efe34)
 
-![image](https://github.com/Marinto-Richee/Parallel-Computing-Architecture/assets/65499285/028e621e-fa75-453c-9d07-e2f815c2d238)
+![image](https://github.com/Marinto-Richee/Parallel-Computing-Architecture/assets/65499285/441c1ebd-2dd6-4f14-b049-d039c6795b37)
 
-![image](https://github.com/Marinto-Richee/Parallel-Computing-Architecture/assets/65499285/2dc932f0-1293-496c-b65c-81b8b78ca22c)
+![image](https://github.com/Marinto-Richee/Parallel-Computing-Architecture/assets/65499285/2d862570-2d14-4774-b3b6-a914dfc56252)
 
 ## Results
 The performance of the two kernels can be compared based on the reduction results. A higher reduction result indicates a more efficient reduction algorithm.
