@@ -13,7 +13,7 @@ The experiment follows the following steps:
 ## Output
 The program outputs the results of the reduction performed by each kernel. Specifically, it displays the final reduced value obtained from the `reduceUnrolling8` kernel and the `reduceUnrolling16` kernel.
 
-![image](https://github.com/Marinto-Richee/Parallel-Computing-Architecture/assets/65499285/5bf49845-df2d-4598-92d3-25d46a5e8f3a)
+![image](https://github.com/Marinto-Richee/Parallel-Computing-Architecture/assets/65499285/597ff299-dae1-45b7-8e8c-561cfe9efe34)
 
 ![image](https://github.com/Marinto-Richee/Parallel-Computing-Architecture/assets/65499285/028e621e-fa75-453c-9d07-e2f815c2d238)
 
