@@ -1,4 +1,4 @@
-# CUDA Matrix Transposition Experiment
+# CUDA Matrix Transposition
 ## Aim
 The aim of this experiment is to compare the performance of different matrix transposition implementations using CUDA.
 
