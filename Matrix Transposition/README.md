@@ -17,10 +17,6 @@ The aim of this experiment is to compare the performance of different matrix tra
 5. The performance of each implementation is compared based on their execution times.
 
 ## Output
-The output of the program includes:
-- The transposed matrix for each implementation (if `iprintf` flag is set).
-- Verification result indicating whether the transposed matrices match the expected result.
-- Execution time for each implementation.
 
 ![image](https://github.com/Marinto-Richee/Parallel-Computing-Architecture/assets/65499285/65657470-fbdb-4c1c-881a-2b1bd6eb1e97)
 
