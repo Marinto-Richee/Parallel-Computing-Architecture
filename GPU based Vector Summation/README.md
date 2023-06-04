@@ -47,4 +47,4 @@ Note: You can modify the code to experiment with different vector sizes, block d
 ### Block size = 256. Two Threads.
 ![image](https://user-images.githubusercontent.com/65499285/235474812-97ac4808-6fd8-4b47-a0b0-656e6d1c94f3.png)
 ## Result:
-The result of the experiment will be a comparison of the execution times and results obtained from different execution configurations. This comparison will help determine the most efficient execution configuration for PCA-GPU-based vector summation.
+The performance differnce between Block Size 1023 and 1024 is very small, and Block size of 1024 provides slightly better performance. Using two theards in parallel will provide much better performance compared to the previous implementation.
