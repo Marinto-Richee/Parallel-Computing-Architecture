@@ -4,7 +4,6 @@
 The aim of this experiment is to demonstrate matrix addition using CUDA programming with unified memory.
 
 ## Procedure
-Here's a condensed version of the step-by-step procedure, including the functions used:
 
 1. Include the required header files and define necessary macros.
    - `cuda_runtime.h`, `stdio.h`, `stdlib.h`, `time.h`, `math.h`, `windows.h`, `device_launch_parameters.h`
