@@ -21,4 +21,5 @@ The program outputs the results of the reduction performed by each kernel. Speci
 
 ## Results
 The performance of the two kernels can be compared based on the reduction results. A higher reduction result indicates a more efficient reduction algorithm.
-The comparison between the two results can provide insights into the performance difference between the kernels.
+`reduceUnrolling16` provides better results as compared to it's counter part.
+
