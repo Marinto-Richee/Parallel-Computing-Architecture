@@ -1,72 +1,199 @@
 # Matrix Addition With Unified Memory
 
-## Aim
-The aim of this experiment is to demonstrate matrix addition using CUDA programming with unified memory.
+## Aim:
+To perform matrix addition using CUDA programming with unified memory.
 
-## Procedure
+## Procedure:
+1. Allocate unified memory for matrices A, B, and C.
+2. Initialize matrices A and B with appropriate values.
+3. Define the grid and block dimensions for the CUDA kernel.
+4. Launch the CUDA kernel to perform matrix addition.
+5. Synchronize the device to ensure all CUDA operations are completed.
+6. Print the result matrix C.
+7. Free the allocated device memory.
 
-1. Include the required header files and define necessary macros.
-   - `cuda_runtime.h`, `stdio.h`, `stdlib.h`, `time.h`, `math.h`, `windows.h`, `device_launch_parameters.h`
+## Program:
+```cuda
+﻿#include <cuda_runtime.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <math.h>
+#include <windows.h>
+#include <device_launch_parameters.h>
+#include <windows.h>
 
-2. Define helper functions for time measurement and error checking.
-   - `seconds()`: Measures the current time in seconds using Windows API functions.
-   - `CHECK(call)`: Macro to check CUDA function calls for errors.
+inline double seconds()
+{
+    LARGE_INTEGER t, f;
+    QueryPerformanceCounter(&t);
+    QueryPerformanceFrequency(&f);
+    return (double)t.QuadPart / (double)f.QuadPart;
+}
+#define CHECK(call)                                                            \
+{                                                                              \
+    const cudaError_t error = call;                                            \
+    if (error != cudaSuccess)                                                  \
+    {                                                                          \
+        fprintf(stderr, "Error: %s:%d, ", __FILE__, __LINE__);                 \
+        fprintf(stderr, "code: %d, reason: %s\n", error,                       \
+                cudaGetErrorString(error));                                    \
+        exit(1);                                                               \
+    }                                                                          \
+}
 
-3. Implement functions for data initialization, host matrix addition, and result checking.
-   - `initialData(float* ip, const int size)`: Initializes the input matrices with random values.
-   - `sumMatrixOnHost(float* A, float* B, float* C, const int nx, const int ny)`: Performs matrix addition on the host side.
-   - `checkResult(float* hostRef, float* gpuRef, const int N)`: Compares the host and GPU results for verification.
+void initialData(float* ip, const int size)
+{
+    int i;
 
-4. Define the GPU kernel function for matrix addition.
-   - `sumMatrixGPU(float* MatA, float* MatB, float* MatC, int nx, int ny)`: Performs matrix addition on the GPU using the grid and block dimensions.
+    for (i = 0; i < size; i++)
+    {
+        ip[i] = (float)(rand() & 0xFF) / 10.0f;
+    }
 
-5. In the main function:
-   - Set up the CUDA device and determine the matrix size.
-     - `cudaGetDeviceProperties(&deviceProp, dev)`
-     - `cudaSetDevice(dev)`
+    return;
+}
 
-   - Allocate memory on the host for matrices A, B, hostRef, and gpuRef.
-     - `cudaMallocManaged((void**)&A, nBytes)`
-     - `cudaMallocManaged((void**)&B, nBytes)`
-     - `cudaMallocManaged((void**)&gpuRef, nBytes)`
-     - `cudaMallocManaged((void**)&hostRef, nBytes)`
+void sumMatrixOnHost(float* A, float* B, float* C, const int nx, const int ny)
+{
+    float* ia = A;
+    float* ib = B;
+    float* ic = C;
 
-   - Initialize data on the host and perform matrix addition on the host side.
-     - `initialData(A, nxy)`
-     - `initialData(B, nxy)`
-     - `sumMatrixOnHost(A, B, hostRef, nx, ny)`
+    for (int iy = 0; iy < ny; iy++)
+    {
+        for (int ix = 0; ix < nx; ix++)
+        {
+            ic[ix] = ia[ix] + ib[ix];
+        }
 
-   - Allocate and initialize GPU result matrices.
-     - `memset(hostRef, 0, nBytes)`
-     - `memset(gpuRef, 0, nBytes)`
+        ia += nx;
+        ib += nx;
+        ic += nx;
+    }
 
-   - Configure the GPU grid and block dimensions.
-     - `dim3 block(dimx, dimy)`
-     - `dim3 grid((nx + block.x - 1) / block.x, (ny + block.y - 1) / block.y)`
+    return;
+}
 
-   - Perform a warm-up kernel launch.
-     - `sumMatrixGPU<<<grid, block>>>(A, B, gpuRef, 1, 1)`
+void checkResult(float* hostRef, float* gpuRef, const int N)
+{
+    double epsilon = 1.0E-8;
+    bool match = 1;
 
-   - Measure the execution time of the GPU matrix addition.
-     - `sumMatrixGPU<<<grid, block>>>(A, B, gpuRef, nx, ny)`
-     - `cudaDeviceSynchronize()`
+    for (int i = 0; i < N; i++)
+    {
+        if (fabs(hostRef[i] - gpuRef[i]) > epsilon)
+        {
+            match = 0;
+            printf("host %f gpu %f\n", hostRef[i], gpuRef[i]);
+            break;
+        }
+    }
 
-   - Synchronize and check for kernel errors.
-     - `cudaGetLastError()`
+    if (!match)
+    {
+        printf("Arrays do not match.\n\n");
+    }
+}
 
-   - Compare host and GPU results for verification.
-     - `checkResult(hostRef, gpuRef, nxy)`
+// grid 2D block 2D
+__global__ void sumMatrixGPU(float* MatA, float* MatB, float* MatC, int nx,
+    int ny)
+{
+    unsigned int ix = threadIdx.x + blockIdx.x * blockDim.x;
+    unsigned int iy = threadIdx.y + blockIdx.y * blockDim.y;
+    unsigned int idx = iy * nx + ix;
 
-   - Free allocated memory on the device and reset the device.
-     - `cudaFree(A)`
-     - `cudaFree(B)`
-     - `cudaFree(hostRef)`
-     - `cudaFree(gpuRef)`
-     - `cudaDeviceReset()`
+    if (ix < nx && iy < ny)
+    {
+        MatC[idx] = MatA[idx] + MatB[idx];
+    }
+}
 
-6. Return and terminate the program.
+int main(int argc, char** argv)
+{
+    printf("%s Starting ", argv[0]);
 
-## Output
+    // set up device
+    int dev = 0;
+    cudaDeviceProp deviceProp;
+    CHECK(cudaGetDeviceProperties(&deviceProp, dev));
+    printf("using Device %d: %s\n", dev, deviceProp.name);
+    CHECK(cudaSetDevice(dev));
+
+    // set up data size of matrix
+    int nx, ny;
+    int ishift = 12;
+
+    if (argc > 1) ishift = atoi(argv[1]);
+
+    nx = ny = 1 << ishift;
+
+    int nxy = nx * ny;
+    int nBytes = nxy * sizeof(float);
+    printf("Matrix size: nx %d ny %d\n", nx, ny);
+
+    // malloc host memory
+    float* A, * B, * hostRef, * gpuRef;
+    CHECK(cudaMallocManaged((void**)&A, nBytes));
+    CHECK(cudaMallocManaged((void**)&B, nBytes));
+    CHECK(cudaMallocManaged((void**)&gpuRef, nBytes); );
+    CHECK(cudaMallocManaged((void**)&hostRef, nBytes););
+
+    // initialize data at host side
+    double iStart = seconds();
+    initialData(A, nxy);
+    initialData(B, nxy);
+    double iElaps = seconds() - iStart;
+    printf("initialization: \t %f sec\n", iElaps);
+
+    memset(hostRef, 0, nBytes);
+    memset(gpuRef, 0, nBytes);
+
+    // add matrix at host side for result checks
+    iStart = seconds();
+    sumMatrixOnHost(A, B, hostRef, nx, ny);
+    iElaps = seconds() - iStart;
+    printf("sumMatrix on host:\t %f sec\n", iElaps);
+
+    // invoke kernel at host side
+    int dimx = 32;
+    int dimy = 32;
+    dim3 block(dimx, dimy);
+    dim3 grid((nx + block.x - 1) / block.x, (ny + block.y - 1) / block.y);
+
+    // warm-up kernel, with unified memory all pages will migrate from host to device
+    sumMatrixGPU << <grid, block >> > (A, B, gpuRef, 1, 1);
+
+    // after warm-up, time with unified memory
+    iStart = seconds();
+
+    sumMatrixGPU << <grid, block >> > (A, B, gpuRef, nx, ny);
+
+    CHECK(cudaDeviceSynchronize());
+    iElaps = seconds() - iStart;
+    printf("sumMatrix on gpu :\t %f sec <<<(%d,%d), (%d,%d)>>> \n", iElaps,
+        grid.x, grid.y, block.x, block.y);
+
+    // check kernel error
+    CHECK(cudaGetLastError());
+
+    // check device results
+    checkResult(hostRef, gpuRef, nxy);
+
+    // free device global memory
+    CHECK(cudaFree(A));
+    CHECK(cudaFree(B));
+    CHECK(cudaFree(hostRef));
+    CHECK(cudaFree(gpuRef));
+
+    // reset device
+    CHECK(cudaDeviceReset());
+
+    return (0);
+}
+```
+## Output:
 
 ![image](https://github.com/Marinto-Richee/Parallel-Computing-Architecture/assets/65499285/07a8472f-09d2-4601-a9c3-baefbec34321)
 
@@ -74,8 +201,6 @@ The aim of this experiment is to demonstrate matrix addition using CUDA programm
 
 ![image](https://github.com/Marinto-Richee/Parallel-Computing-Architecture/assets/65499285/eb8a8c46-1e57-4b60-be1f-85b0aa6f39c9)
 
-## Result
-Removing the `memset` calls does not affect the correctness of the program and has no significant impact on its performance. It is good practice to remove unnecessary code to improve code readability and maintainability.
-<br>
-The result provides insights on the advantages of Unified memory. And profiling provides detailled information about the resource utilization.
-
+## Result:
+The initialization process was completed in 2.85 seconds, and the matrix addition took 0.052 seconds in the host, and 0.004 seconds in the GPU and provides better performance among the host and GPU.
+Thus, matrix addition using CUDA programming with unified memory has been performed successfully.
